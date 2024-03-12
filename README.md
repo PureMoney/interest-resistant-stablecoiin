@@ -37,10 +37,16 @@ avm --version
 anchor init hello-world
 [this prepares files for Rust - not what we need - but good enough to start somewhere]
 
+## To add anchor library to a project:
+cargo add anchor-lang
+cargo add anchor-spl
+
+anchor ipl fetch <address>
+solang ipl --output filename.txt some.ipl
+![image](https://github.com/PureMoney/interest-resistant-stablecoiin/assets/2825510/6b1f3b4a-fb8f-4e28-853c-e5e1249947a9)
+
 https://solang.readthedocs.io/en/latest/index.html
 https://solang.readthedocs.io/en/latest/targets/solana.html
-
-Install solang Step 1:
 
 Installing Solang — Solang Solidity Compiler v0.3.3-38-g22d6217 documentation
 Follow Option 2 - Download the binary
@@ -52,5 +58,6 @@ cp /mnt/c/Users/CarlosTapang/Downloads/solang-linux-x86-64 ~/.local/share/solana
 (Copy from your Download folder to ~/.local/share/solana/install/solang/bin/solang)
 export PATH=/home/ctapang/.local/share/solana/install/active_release/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:~/.local/share/solana/install/solang/bin/solang
 solang --version
+(Note: solang is also installed when solana sdk is installed.)
 
 ![image](https://github.com/PureMoney/interest-resistant-stablecoiin/assets/2825510/45316ee0-83d8-433d-bbd2-dd8ea2194f6d)
