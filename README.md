@@ -16,12 +16,19 @@ Here is a great intro on how to use solang in the Solana environment: [Link](htt
 
 Here is some documentation on using solang with some info on how to use Anchor: [Link](https://solang.readthedocs.io/en/v0.3.3/targets/solana.html)
 
+This site has nothing about solang, but it is useful for setting up a WSL environment:
+[Link](https://www.helius.dev/blog/an-introduction-to-anchor-a-beginners-guide-to-building-solana-programs)
+
+
 # How to install the tools in your Linux workstation
 
-## 1. Installing Cargo and Anchor
+## 1. Installing Solana, Cargo, and Anchor
 
 ```shell
 # Using Ubuntu WSL
+
+@ Install solana cli
+sh -c "$(curl -sSfL https://release.solana.com/v1.18.4/install)"
 
 # Cargo installation
 sudo apt install cargo
