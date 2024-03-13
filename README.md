@@ -63,15 +63,6 @@ anchor init hello-world
 
 this prepares files for Rust - not what we need - but good enough to start somewhere.
 
-### To add anchor library to a project:
-
-```shell
-cargo add anchor-lang
-cargo add anchor-spl
-anchor ipl fetch <address>
-solang ipl --output filename.txt some.ipl
-```
-
 ## 2. Solang Installation
 
 https://solang.readthedocs.io/en/latest/index.html
@@ -96,3 +87,12 @@ solang --version
 ```
 
 (Note: solang is also installed when solana sdk is installed.)
+
+### To integrate with a pre-existing, external contract:
+
+```shell
+anchor idl fetch --out openbook.idl <address of OpenBook program>
+solang idl --output filename.txt openbook.idl
+cargo add openbook.idl
+```
+
