@@ -1,4 +1,4 @@
-# interest-resistant-stablecoiin
+# Inflation-resistant Stablecoin
 
 This a set of Solana contracts written in solang that implement an inflation-resistant stablecoin using OpenBook. It is submitted as an entry to the Renaissance Hackathon run by Colosseum.
 
