@@ -107,7 +107,7 @@ Run anchor build, this will add a new keypair to target/deploy
 
 run anchor keys list, this will give you the new program id
 
-copy the id to the top of your lib.rs
+copy the id to the top of your solang contract(s)
 
 run anchor build again
 
