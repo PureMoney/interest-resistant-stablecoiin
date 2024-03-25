@@ -96,3 +96,19 @@ solang idl --output filename.txt openbook.idl
 cargo add openbook.idl
 ```
 
+
+# Issue
+
+If your contract increases in size as you develop it, "anchor deploy" can fail with "Error: Deploying program failed: RPC response error -32002: Transaction simulation failed: Error processing Instruction 0: account data too small for instruction [3 log messages]". Anchor deploy calculates the necessary data size, but if you modify the contract, memory size requirement of your contract can increase. This is the reason for this error. To fix:
+
+Delete the target folder
+
+Run anchor build, this will add a new keypair to target/deploy
+
+run anchor keys list, this will give you the new program id
+
+copy the id to the top of your lib.rs
+
+run anchor build again
+
+and anchor deploy
