@@ -353,6 +353,7 @@ struct PlaceTakeOrderArgs {
 
 // Finally, the interface!
 
+@program_id("opnb2LAfJYbRMAHHvqjCwQxanZn7ReEHp1k81EohpZb")
 interface openbook_v2 {
 	/// Create a [`Market`](crate::state::Market) for a given token pair.
 	@selector([0x67,0xe2,0x61,0xeb,0xc8,0xbc,0xfb,0xfe])
