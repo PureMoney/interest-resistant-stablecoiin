@@ -111,7 +111,7 @@ Start localnet solana-test-validator in another WSL instance
 
 Run "anchor deploy" in the first WSL instance
 
-Run anchor keys list, this will give you the new program ids
+Run "anchor keys list", this will give you the new program ids
 
 Copy the id(s) to the top of your solang contract(s) and also to Anchor.toml
 
