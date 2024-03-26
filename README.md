@@ -96,6 +96,9 @@ solang idl --output filename.txt openbook.idl
 cargo add openbook.idl
 ```
 
+### To compile all TypeScript source files
+
+The tsc config file tsconfig.json must be used, and the only way I found to do this (that also transpiles the .ts files) is to simply do the CLI command "tsc".
 
 ## 3. Possible Issues
 
