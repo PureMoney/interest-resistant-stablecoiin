@@ -97,7 +97,7 @@ cargo add openbook.idl
 ```
 
 
-### Issue
+## 3. Possible Issues
 
 If your contract increases in size as you develop it, "anchor deploy" can fail with "Error: Deploying program failed: RPC response error -32002: Transaction simulation failed: Error processing Instruction 0: account data too small for instruction [3 log messages]". Anchor deploy calculates the necessary data size, but if you modify the contract, memory size requirement of your contract can increase. This is the reason for this error. Another error that can come up during testing is "Error: failed to send transaction: Transaction simulation failed: Error processing Instruction 0: incorrect program id for instruction".
 
@@ -123,3 +123,5 @@ Stop the solana-test-validator, then run "anchor test"
 
 Note: The program ids of all contracts should be in the following places:
 in the sol source file (above "contract" keyword), in the target/idl json files (bottom), in the target/types files (bottom), and in Anchor.toml.
+
+It can be confusing because "anchor deploy" outpus addresses which can be different from "anchor keys list".
