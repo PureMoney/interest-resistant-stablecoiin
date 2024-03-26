@@ -96,3 +96,32 @@ solang idl --output filename.txt openbook.idl
 cargo add openbook.idl
 ```
 
+
+## 3. Possible Issues
+
+If your contract increases in size as you develop it, "anchor deploy" can fail with "Error: Deploying program failed: RPC response error -32002: Transaction simulation failed: Error processing Instruction 0: account data too small for instruction [3 log messages]". Anchor deploy calculates the necessary data size, but if you modify the contract, memory size requirement of your contract can increase. This is the reason for this error. Another error that can come up during testing is "Error: failed to send transaction: Transaction simulation failed: Error processing Instruction 0: incorrect program id for instruction".
+
+To fix:
+
+Delete the target folder
+
+Run "anchor build --solana-version 1.18.4" this will add a new keypair to target/deploy
+
+Start localnet solana-test-validator in another WSL instance
+
+Run "anchor deploy" in the first WSL instance
+
+Run "anchor keys list", this will give you the new program ids
+
+Copy the id(s) to the top of your solang contract(s) and also to Anchor.toml
+
+Delete the target folder again
+
+Run anchor build again to get the correct id(s) in target/types folder
+
+Stop the solana-test-validator, then run "anchor test"
+
+Note: The program ids of all contracts should be in the following places:
+in the sol source file (above "contract" keyword), in the target/idl json files (bottom), in the target/types files (bottom), and in Anchor.toml.
+
+It can be confusing because "anchor deploy" outpus program ids which can be different from "anchor keys list". If this happens, use the ids output by "anchor deploy".
