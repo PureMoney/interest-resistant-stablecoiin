@@ -113,5 +113,11 @@ Run anchor keys list, this will give you the new program ids
 
 Copy the id(s) to the top of your solang contract(s) and also to Anchor.toml
 
+Delete the target folder again
+
 Run anchor build again to get the correct id(s) in target/types folder
 
+Stop the solana-test-validator, then run "anchor test"
+
+Note: The program ids of all contracts should be in the following places:
+in the sol source file (above "contract" keyword), in the target/idl json files (bottom), in the target/types files (bottom), and in Anchor.toml.
