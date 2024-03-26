@@ -99,7 +99,9 @@ cargo add openbook.idl
 
 ### Issue
 
-If your contract increases in size as you develop it, "anchor deploy" can fail with "Error: Deploying program failed: RPC response error -32002: Transaction simulation failed: Error processing Instruction 0: account data too small for instruction [3 log messages]". Anchor deploy calculates the necessary data size, but if you modify the contract, memory size requirement of your contract can increase. This is the reason for this error. To fix:
+If your contract increases in size as you develop it, "anchor deploy" can fail with "Error: Deploying program failed: RPC response error -32002: Transaction simulation failed: Error processing Instruction 0: account data too small for instruction [3 log messages]". Anchor deploy calculates the necessary data size, but if you modify the contract, memory size requirement of your contract can increase. This is the reason for this error. Another error that can come up during testing is "Error: failed to send transaction: Transaction simulation failed: Error processing Instruction 0: incorrect program id for instruction".
+
+To fix:
 
 Delete the target folder
 
