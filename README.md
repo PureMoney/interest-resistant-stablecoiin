@@ -124,4 +124,4 @@ Stop the solana-test-validator, then run "anchor test"
 Note: The program ids of all contracts should be in the following places:
 in the sol source file (above "contract" keyword), in the target/idl json files (bottom), in the target/types files (bottom), and in Anchor.toml.
 
-It can be confusing because "anchor deploy" outpus addresses which can be different from "anchor keys list".
+It can be confusing because "anchor deploy" outpus program ids which can be different from "anchor keys list". If this happens, use the ids output by "anchor deploy".
