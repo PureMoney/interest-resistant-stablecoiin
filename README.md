@@ -103,12 +103,15 @@ If your contract increases in size as you develop it, "anchor deploy" can fail w
 
 Delete the target folder
 
-Run anchor build, this will add a new keypair to target/deploy
+Run "anchor build --solana-version 1.18.4" this will add a new keypair to target/deploy
 
-run anchor keys list, this will give you the new program id
+Start localnet solana-test-validator in another WSL instance
 
-copy the id to the top of your solang contract(s)
+Run "anchor deploy" in the first WSL instance
 
-run anchor build again
+Run anchor keys list, this will give you the new program ids
 
-and anchor deploy
+Copy the id(s) to the top of your solang contract(s) and also to Anchor.toml
+
+Run anchor build again to get the correct id(s) in target/types folder
+
