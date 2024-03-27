@@ -161,3 +161,6 @@ and then
 solana airdrop 1 \<program id obtained above\>
 
 then you'd have to edit four files to put this same address as the program id.
+
+Finally, it is recommended not to use "anchor deploy". Instead, use "solana deploy" as detailed in the answer here:
+https://solana.stackexchange.com/questions/5570/error-the-declared-program-id-does-not-match-the-actual-program-id
