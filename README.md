@@ -162,6 +162,31 @@ solana airdrop 1 \<program id obtained above\>
 
 then you'd have to edit four files to put this same address as the program id.
 
+However, the program CreateMarket could still fail to run, display the same error message as above. What finally worked for me was the following:
+```
+1. Go to the other WSL instance and stop solana-test-validator.
+2. Issue the command "solana-test-validator --reset" in order to start clean.
+3. In the first WSL instance, issue the following commands:
+    anchor build --solana-version 1.18.4
+    solana-keygen pubkey target/deploy/openbookv_2_interface-keypair.json
+    anchor deploy -p openbookv_2_interface --program-keypair target/deploy/openbookv_2_interface-keypair.json
+4. The command "anchor run node" should then output the following:
+
+Your transaction signature 4ycYnpRui2x1hMHtNRWrPE3dRFt4KToZvgm2vmWSCwoCCmV7325sSGF7m1PBqd7ZCtUgH7HFBRshFnzwaX4Tb72h
+state {
+  side: { bid: {} },
+  priceLots: <BN: 400>,
+  maxBaseLots: <BN: 800>,
+  maxQuoteLotsIncludingFees: <BN: 54bd2>,
+  clientOrderId: <BN: bacf>,
+  orderType: { market: {} },
+  expiryTimestamp: <BN: 8a8310>,
+  selfTradeBehavior: { abortTransaction: {} },
+  limit: 80
+}
+size:  44
+```
+
 Finally, it is recommended not to use "anchor deploy". Instead, use "solana program deploy":
 
 solana program deploy target/deploy/openbookv_2_interface.so  -k /home/ctapang/.config/solana/id.json
