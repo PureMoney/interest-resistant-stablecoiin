@@ -127,7 +127,7 @@ Stop the solana-test-validator, then run "anchor test"
 Note: The program ids of all contracts should be in the following places:
 in the sol source file (above "contract" keyword), in the target/idl json files (bottom), in the target/types files (bottom), and in Anchor.toml.
 
-It can be confusing because "anchor deploy" outpus program ids which can be different from "anchor keys list". If this happens, use the ids output by "anchor deploy".
+It can be confusing because "anchor deploy" outputs program ids which can be different from "anchor keys list". If this happens, use the ids output by "anchor deploy".
 
 Also, the Solana address to which the program is deployed must have some minimum SOL! Not only the account that deployed the program, but also the program address itself must have some SOL (because of the rent rule for any address: an address does not exist if it has no SOL). This issue shows up when you try to "anchor run node":
 
@@ -158,6 +158,6 @@ solana-keygen pubkey target/deploy/openbookv_2_interface-keypair.json
 
 and then
 
-solana airdrop 1 <program id obtained above>
+solana airdrop 1 \<program id obtained above\>
 
 then you'd have to edit four files to put this same address as the program id.
