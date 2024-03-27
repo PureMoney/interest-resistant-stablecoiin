@@ -128,3 +128,36 @@ Note: The program ids of all contracts should be in the following places:
 in the sol source file (above "contract" keyword), in the target/idl json files (bottom), in the target/types files (bottom), and in Anchor.toml.
 
 It can be confusing because "anchor deploy" outpus program ids which can be different from "anchor keys list". If this happens, use the ids output by "anchor deploy".
+
+Also, the Solana address to which the program is deployed must have some minimum SOL! Not only the account that deployed the program, but also the program address itself must have some SOL (because of the rent rule for any address: an address does not exist if it has no SOL). This issue shows up when you try to "anchor run node":
+
+```
+failed, error:  SendTransactionError: failed to send transaction: Transaction simulation failed: Error processing Instruction 0: incorrect program id for instruction
+    at Connection.sendEncodedTransaction (/home/ctapang/source/inflation-resistant-stablecoin/anchor-solang/node_modules/@solana/web3.js/lib/index.cjs.js:8026:13)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async Connection.sendRawTransaction (/home/ctapang/source/inflation-resistant-stablecoin/anchor-solang/node_modules/@solana/web3.js/lib/index.cjs.js:7992:20)
+    at async sendAndConfirmRawTransaction (/home/ctapang/source/inflation-resistant-stablecoin/anchor-solang/node_modules/@coral-xyz/anchor/dist/cjs/provider.js:247:23)
+    at async AnchorProvider.sendAndConfirm (/home/ctapang/source/inflation-resistant-stablecoin/anchor-solang/node_modules/@coral-xyz/anchor/dist/cjs/provider.js:98:20)
+    at async MethodsBuilder.rpc [as _rpcFn] (/home/ctapang/source/inflation-resistant-stablecoin/anchor-solang/node_modules/@coral-xyz/anchor/dist/cjs/program/namespace/rpc.js:15:24) {
+  logs: [
+    'Program 4b6V88qC7MXuvFhnTf1wSTQVJj7eswky6WkETaNqTJtm invoke [1]',
+    'Program log: program_id should be 2VN914zCR1WkHwXeP8vRdimBWMYuNGL9MqJbbQ28SmMy',
+    'Program 4b6V88qC7MXuvFhnTf1wSTQVJj7eswky6WkETaNqTJtm consumed 1672 of 200000 compute units',
+    'Program 4b6V88qC7MXuvFhnTf1wSTQVJj7eswky6WkETaNqTJtm failed: incorrect program id for instruction'
+  ],
+  programErrorStack: ProgramErrorStack {
+    stack: [
+      [PublicKey [PublicKey(4b6V88qC7MXuvFhnTf1wSTQVJj7eswky6WkETaNqTJtm)]]
+    ]
+  }
+}
+```
+To fix this issue, first find out what the address of the program is (program id), by issuing the following CLI:
+
+solana-keygen pubkey target/deploy/openbookv_2_interface-keypair.json
+
+and then
+
+solana airdrop 1 <program id obtained above>
+
+then you'd have to edit four files to put this same address as the program id.
