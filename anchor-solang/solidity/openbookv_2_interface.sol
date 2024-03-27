@@ -1,7 +1,7 @@
 import "solana";
 import "./openbook_v2.sol";
 
-@program_id("2VN914zCR1WkHwXeP8vRdimBWMYuNGL9MqJbbQ28SmMy")
+@program_id("4b6V88qC7MXuvFhnTf1wSTQVJj7eswky6WkETaNqTJtm")
 contract openbookv_2_interface {
 
     // A private instance of the PlaceOrderArgs struct

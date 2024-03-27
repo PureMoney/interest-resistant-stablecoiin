@@ -6,7 +6,7 @@ skip-lint = false
 
 [programs.localnet]
 flipper = "GywSWhcnR1WDZgGSMd7Nev1ugyj99Cw1q3TSKvqEHKig"
-openbookv_2_interface = "2VN914zCR1WkHwXeP8vRdimBWMYuNGL9MqJbbQ28SmMy"
+openbookv_2_interface = "4b6V88qC7MXuvFhnTf1wSTQVJj7eswky6WkETaNqTJtm"
 
 [registry]
 url = "https://api.apr.dev"
