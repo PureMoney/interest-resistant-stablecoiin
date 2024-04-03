@@ -7,20 +7,17 @@ contract openbookv_2_interface {
     // A private instance of the PlaceOrderArgs struct
     // This is the data that is stored in the account
     PlaceOrderArgs private placeOrderArgs;
+    OracleConfigParams private oracleConfigParams;
 
     @payer(payer) // "payer" is the account that pays to create the dataAccount
     constructor(
         @space uint16 space // "space" allocated to the account (maximum 10240 bytes, maximum space that can be reallocate when creating account in program via a CPI) 
-        // Side	_side,
-        // int64	_priceLots,
-        // int64	_maxBaseLots,
-        // int64	_maxQuoteLotsIncludingFees,
-        // uint64	_clientOrderId,
-        // PlaceOrderType	_orderType,
-        // uint64	_expiryTimestamp,
-        // SelfTradeBehavior	_selfTradeBehavior,
-        // uint8	_limit
     ) {
+        // Setup Oracles setting
+        oracleConfigParams = OracleConfigParams(
+            1.0, // confFilter (f32)
+            100  // maxStalenessSlots (u32)
+        );
         // The PlaceOrderArgs instance is initialized with the data passed to the constructor
         placeOrderArgs = PlaceOrderArgs(
             Side.Bid,
@@ -35,14 +32,14 @@ contract openbookv_2_interface {
         );
     }
 
-    // A function to get the PlaceOrderArgs data stored on the account
+    // Only for testing: A function to get the PlaceOrderArgs data stored on the account
     function get() public view returns (PlaceOrderArgs) {
-	    bytes8 discriminator = bytes8(sha256(bytes("global:placeOrder")));
-        print("discriminator: {}".format(discriminator));
+	    // bytes8 discriminator = bytes8(sha256(bytes("global:placeOrder")));
+        // print("discriminator: {}".format(discriminator));
         return placeOrderArgs;
     }
 
-    // A function to get the size in bytes of the stored PlaceOrderArgs
+    // Only for testing: A function to get the size in bytes of the stored PlaceOrderArgs
     function getOrderInfoSize() public pure returns(uint) {
         uint size = 0;
         size += 1; // cannot convert enum to a byte
@@ -56,5 +53,62 @@ contract openbookv_2_interface {
         size += 1; // bytes(placeOrderArgs.limit).length;
         print("size = {}".format(size));
         return size;
+    }
+
+    // A function for creating the ROKS market
+    // Ensure that this gets called only by our account
+    @mutableSigner(market)
+    @account(marketAuthority)
+    @mutableAccount(bids)
+    @mutableAccount(asks)
+    @mutableAccount(eventHeap)
+    @mutableSigner(payer)
+    @mutableAccount(marketBaseVault)
+    @mutableAccount(marketQuoteVault)
+    @account(baseMint)
+    @account(quoteMint)
+    // @account(systemProgram)
+    // @account(tokenProgram)
+    // @account(associatedTokenProgram)
+    @account(oracleA)
+    @account(oracleB)
+    @account(collectFeeAdmin)
+    @account(openOrdersAdmin)
+    @account(consumeEventsAdmin)
+    @account(closeMarketAdmin)
+    @account(eventAuthority)
+    @account(program)
+    function createROKSMarket() external {
+
+        // number of accounts needed is 21 minus 5 optional
+        AccountMeta[13] am = [
+            AccountMeta({ pubkey: tx.accounts.market.key,                 is_writable: true,  is_signer: true  }),
+            AccountMeta({ pubkey: tx.accounts.marketAuthority.key,        is_writable: false, is_signer: false }),
+            AccountMeta({ pubkey: tx.accounts.bids.key,                   is_writable: true,  is_signer: false }),
+            AccountMeta({ pubkey: tx.accounts.asks.key,                   is_writable: true,  is_signer: false }),
+            AccountMeta({ pubkey: tx.accounts.eventHeap.key,              is_writable: true,  is_signer: false }),
+            AccountMeta({ pubkey: tx.accounts.payer.key,                  is_writable: true,  is_signer: true  }),
+            AccountMeta({ pubkey: tx.accounts.marketBaseVault.key,        is_writable: true,  is_signer: false }),
+            AccountMeta({ pubkey: tx.accounts.marketQuoteVault.key,       is_writable: true,  is_signer: false }),
+            AccountMeta({ pubkey: tx.accounts.baseMint.key,               is_writable: false, is_signer: false }),
+            AccountMeta({ pubkey: tx.accounts.quoteMint.key,              is_writable: false, is_signer: false }),
+            // AccountMeta({ pubkey: tx.accounts.systemProgram.key,          is_writable: false, is_signer: false }),
+            // AccountMeta({ pubkey: tx.accounts.tokenProgram.key,           is_writable: false, is_signer: false }),
+            // AccountMeta({ pubkey: tx.accounts.associatedTokenProgram.key, is_writable: false, is_signer: false }),
+            AccountMeta({ pubkey: tx.accounts.collectFeeAdmin.key,        is_writable: false, is_signer: false }),
+            AccountMeta({ pubkey: tx.accounts.eventAuthority.key,         is_writable: false, is_signer: false }),
+            AccountMeta({ pubkey: tx.accounts.program.key,                is_writable: false, is_signer: false })
+        ];
+
+        // market has been created; this is just for illustration
+        openbook_v2.createMarket{accounts: am}(
+            "ROKS: Inflation Resistant Stablecoin",
+            oracleConfigParams,
+            100000000, // quoteLotSize
+            100000000, // baseLotSize
+            1000000,   // makerFee
+            1000000,   // takerFee
+            0          // timeExpiry
+        );
     }
 }

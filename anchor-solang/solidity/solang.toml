@@ -2,11 +2,11 @@
 version = "0.1.0"
 
 # Source files to be compiled.
-input_files = ["flipper.sol", "openbookv2interface.sol", "openbook_v2.sol"]
+input_files = ["openbookv2interface.sol", "openbook_v2.sol"]
 
 # Contracts to be compiled.
 # If no contracts are specified, solang will compile all non-virtual contracts.
-contracts = ["flipper", "openbookv_2_interface"]
+contracts = ["openbookv_2_interface", "openbook_v2"]
 
 # Specify required import paths.
 import_path = ["./"]

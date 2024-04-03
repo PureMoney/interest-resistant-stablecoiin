@@ -28,10 +28,22 @@ describe("anchor-solang", () => {
 
     console.log("state", val1);
 
+    // Note: ROKS-USDC market has been created
+    // This is just for showing how to call into solang.
     const val2 = await program.methods
-      .getOrderInfoSize()
-      .accounts({ dataAccount: dataAccount.publicKey })
-      .view();
+      .createROKSMarket()
+      .accounts({ 
+        // market: marketMgr,
+        // marketAuthority: immutableAndNonSigner,
+        // bids: dataAccount1.publicKey,
+        // asks: dataAccount2.publicKey,
+        // eventHeap: dataAccount3.publicKey,
+        // payer: wallet.publicKey,
+        // marketBaseVault: dataAccount4.publicKey,
+        // marketQuoteVault: dataAccount5.publicKey,
+        baseMint: "roksyHbKUYGp2Him7ubyruUXSKXXMy7hZP7u81vxCN8",
+        dataAccount: dataAccount.publicKey })
+      .rpc();
 
     console.log("size", val2.toString());
   });

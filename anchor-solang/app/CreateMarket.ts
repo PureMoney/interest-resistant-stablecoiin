@@ -1,6 +1,7 @@
 // Script for creating the ROKS market
 // C. Tapang 03/24/2024
-// Parameters (as recommended in )
+// Parameters (as recommended in Dexlab and Raydium)
+// Abandoned on 3/29 in favor of openbook-v2-ui.
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Openbookv2Interface } from "../target/types/openbookv_2_interface";
