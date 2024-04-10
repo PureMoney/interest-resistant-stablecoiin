@@ -91,7 +91,8 @@ export default function Home() {
   const openbookClient = useOpenbookClient();
 
   useEffect(() => {
-    fetchData()
+    if (markets.length === 1 && markets[0].market === "") {
+      fetchData()
       .then((res) => {
         setMarkets(res);
         fetchMarket(res[0].market);
@@ -100,6 +101,7 @@ export default function Home() {
       .catch((e) => {
         console.log(e);
       });
+    }
   }, []);
 
   function priceDataToUI(key) {
@@ -114,6 +116,8 @@ export default function Home() {
     setMarket(market);
     setMarketPubkey(new PublicKey(key));
 
+    if (!openbookClient.getBookSide) return;
+    
     const booksideAsks = await openbookClient.getBookSide(market.asks);
     const booksideBids = await openbookClient.getBookSide(market.bids);
     if (booksideAsks === null || booksideBids === null) return;

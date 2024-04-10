@@ -1,7 +1,7 @@
 import {
   findAllMarkets,
+  IDL,
   MarketAccount,
-  BookSideAccount,
   OPENBOOK_PROGRAM_ID,
   OpenBookV2Client,
 } from "@openbook-dex/openbook-v2";
@@ -16,7 +16,6 @@ import {
   Signer
 } from "@solana/web3.js";
 import {
-  useOpenbookClient,
   useHookConnection,
   useFakeProvider,
 } from "../hooks/useOpenbookClient";
@@ -40,6 +39,16 @@ export const walletTokenAcct4USDC = new PublicKey("5KGAUASRHPwthAWKooyWMaShoXAy6
 export const tokenUSDC = new PublicKey("E6oEFEuYUYEt8U5mmKQvzvRUhRmgHCsVpmcyyrPEbCNy"); // fake usdc
 export const tokenROKS = new PublicKey("roksyHbKUYGp2Him7ubyruUXSKXXMy7hZP7u81vxCN8");
 // / export const chainlink = new PublicKey("HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny"); // chainlink
+
+// from "@openbook-dex/openbook-v2/dist/types"
+// this should have been exported from there
+interface Market {
+  market: string;
+  baseMint: string;
+  quoteMint: string;
+  name: string;
+  timestamp: number | null | undefined;
+}
 
 const nonceAcct = new PublicKey("GjbJUK45q4AHRa3GHtwgQbcYpGScBPCGkfXLMmZes3rk");
 const lookupTableAddress = new PublicKey("3hA6zazrv9cWJ8hMm4oHVgJcPvdSpmAtzZ2bfsRe1LrN");
@@ -89,8 +98,18 @@ export const fetchData = async () => {
   const connection = useHookConnection();
   const provider = useFakeProvider();
   console.log("---> openbook v2 public key: ", OPENBOOK_PROGRAM_ID.toBase58());
-  let markets = await findAllMarkets(connection, OPENBOOK_PROGRAM_ID, provider);
-  return markets;
+  const mkts: string[] = [];
+  const uniqueMarkets: Market[] = [];
+  const markets = await findAllMarkets(connection, OPENBOOK_PROGRAM_ID, provider);
+  console.log("==> markets length: ", markets.length);
+  markets.forEach(mkt => {
+    if (!mkts.includes(mkt.market)) {
+      mkts.push(mkt.market);
+      uniqueMarkets.push(mkt);
+    }
+  });
+  console.log("==> uniqueMarkets len: ", uniqueMarkets.length);
+  return uniqueMarkets;
 };
 
 export const getMarket = async (
@@ -98,6 +117,8 @@ export const getMarket = async (
   publicKey: string
 ): Promise<MarketAccount> => {
   console.log("--> market selected: ", publicKey);
-  let market = await client.getMarketAccount(new PublicKey(publicKey));
+  let market = null;
+  if (!!client.getMarketAccount)
+    market = await client.getMarketAccount(new PublicKey(publicKey));
   return market ? market : ({} as MarketAccount);
 };

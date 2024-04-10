@@ -20,7 +20,7 @@ import {
 const CreateMarket = () => {
   const { publicKey } = wallet;
 
-  const [name, setName] = useState("ROKS-USDC <--");
+  const [name, setName] = useState("ROKS-USDC");
   const [quoteMint, setQuoteMint] = useState(tokenUSDC); // fake usdc
   const [baseMint, setBaseMint] = useState(tokenROKS);
   const [quoteLotSize, setQuoteLotSize] = useState("100000000");
