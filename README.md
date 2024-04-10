@@ -1,6 +1,8 @@
 # Intro Video
 https://youtu.be/9FZMjFbcW3Q
 
+A project by Rock Stable, purveyors of ROKS, a stablecoin currently used exclusively for cross-border money transfers (https://sendroks.com).
+
 # Inflation-resistant Stablecoin
 
 This a set of Solana contracts written in solang that implement an inflation-resistant stablecoin using OpenBook. It is submitted as an entry to the Renaissance Hackathon run by Colosseum.
