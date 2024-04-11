@@ -20,8 +20,7 @@ import { Keypair, TransactionMessage } from "@solana/web3.js";
 // MAINNET
 // export const RPC = "https://misty-wcb8ol-fast-mainnet.helius-rpc.com/";
 
-export const RPC =
-  "https://solana-devnet.g.alchemy.com/v2/1CWmcO7kQEa6JVhajg7OHFRQ6ez8B4Hn";
+export const RPC = process.env.NEXT_PUBLIC_RPC;
 
 // "https://misty-wcb8ol-fast-mainnet.helius-rpc.com/";
 
