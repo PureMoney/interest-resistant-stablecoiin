@@ -18,7 +18,8 @@ import {
   wallet, 
   ixAdvanceNonce, 
   sendVersionedTx,
-  openOrdersAdminE
+  openOrdersAdminE,
+  getAccountInfo
 } from "../utils/openbook";
 import { BN } from "@coral-xyz/anchor";
 
@@ -117,7 +118,7 @@ export default function Home() {
     setMarketPubkey(new PublicKey(key));
 
     if (!openbookClient.getBookSide) return;
-    
+
     const booksideAsks = await openbookClient.getBookSide(market.asks);
     const booksideBids = await openbookClient.getBookSide(market.bids);
     if (booksideAsks === null || booksideBids === null) return;
@@ -228,12 +229,6 @@ export default function Home() {
       //   throw new Error("No open orders");
       // }
 
-      console.log("--> open orders: ", openOrdersPubkey.toBase58());
-      if (openOrdersPubkey.toBase58() === "7XNfEtNuwMsEbcJUrAb8EnErcx1svE1E5a19RJ8pBXxe") {
-        console.log("--> bad openOrdersAccount");
-        throw new Error("bad account");
-      }
-
       const ixPlaceOrder = await openbookClient.program.methods
       .placeOrder(args)
       .accounts({
@@ -267,8 +262,18 @@ export default function Home() {
 
       const ixMoveNonce2 = await ixAdvanceNonce(100000);
 
-    const tx = await sendVersionedTx([...ixMoveNonce2, ...ixCreateOpenOrders, ixPlaceOrder], signers);
+      let tx = null;
 
+      const openOrdersAcct = openOrdersPubkey.toBase58();
+      console.log("--> open orders: ", openOrdersAcct);
+      if (openOrdersAcct.length === 44) {
+        console.log("--> examine openOrdersAccount to make sure it doesn't belong to another market");
+        const acctInfo = await getAccountInfo(openOrdersAcct);
+        console.log("--> openOrdersAcctInfo: ", acctInfo);
+      }
+      else {
+        tx = await sendVersionedTx([...ixMoveNonce2, ...ixCreateOpenOrders, ixPlaceOrder], signers);
+      }
       console.log("placeOrder events tx", tx);
     } catch (error) {
       console.error(error);

@@ -123,6 +123,13 @@ export const sendVersionedTx = async (
   });
 };
 
+export const getAccountInfo = async (anchorAccount: string) => {
+  const connection = useHookConnection();
+  return await connection.getParsedAccountInfo(
+    new PublicKey(anchorAccount)
+  );
+}
+
 export const fetchData = async () => {
   const connection = useHookConnection();
   const provider = useFakeProvider();
