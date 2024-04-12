@@ -15,7 +15,6 @@ const wallet = provider.wallet;
 
 const program = anchor.workspace.Openbookv2Interface as Program<Openbookv2Interface>;
 
-// Add your test here.
 program.methods
     .new(128)
     .accounts({ dataAccount: dataAccount.publicKey, payer: wallet.publicKey })

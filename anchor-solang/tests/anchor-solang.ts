@@ -1,6 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Openbookv2Interface } from "../target/types/openbookv_2_interface";
+import { BN } from "bn.js";
 
 describe("anchor-solang", () => {
   // Configure the client to use the local cluster.
@@ -28,23 +29,35 @@ describe("anchor-solang", () => {
 
     console.log("state", val1);
 
+    const val3 = await program.methods
+      .calcDiscriminator()
+      .view();
+
+    console.log("discriminator: ", val3);
+
     // Note: ROKS-USDC market has been created
     // This is just for showing how to call into solang.
     const val2 = await program.methods
-      .createROKSMarket()
+      .editOrder(
+        new BN(100045),
+        new BN(100)
+      )
       .accounts({ 
-        // market: marketMgr,
-        // marketAuthority: immutableAndNonSigner,
-        // bids: dataAccount1.publicKey,
-        // asks: dataAccount2.publicKey,
-        // eventHeap: dataAccount3.publicKey,
-        // payer: wallet.publicKey,
-        // marketBaseVault: dataAccount4.publicKey,
-        // marketQuoteVault: dataAccount5.publicKey,
-        baseMint: "roksyHbKUYGp2Him7ubyruUXSKXXMy7hZP7u81vxCN8",
-        dataAccount: dataAccount.publicKey })
+        signer: "87AhFAiVEVdFZqaQWnhu7j6WViobUnzmSQoqjCKRW1ys" // ,
+        // openOrdersAccount: "roksyHbKUYGp2Him7ubyruUXSKXXMy7hZP7u81vxCN8",
+        // openOrdersAdmin: "roksyHbKUYGp2Him7ubyruUXSKXXMy7hZP7u81vxCN8",
+        // userTokenAccount: "roksyHbKUYGp2Him7ubyruUXSKXXMy7hZP7u81vxCN8",
+        // market: "roksyHbKUYGp2Him7ubyruUXSKXXMy7hZP7u81vxCN8",
+        // bids: "roksyHbKUYGp2Him7ubyruUXSKXXMy7hZP7u81vxCN8",
+        // asks: "roksyHbKUYGp2Him7ubyruUXSKXXMy7hZP7u81vxCN8",
+        // eventHeap: "roksyHbKUYGp2Him7ubyruUXSKXXMy7hZP7u81vxCN8",
+        // marketVault: "roksyHbKUYGp2Him7ubyruUXSKXXMy7hZP7u81vxCN8",
+        // oracleA: "roksyHbKUYGp2Him7ubyruUXSKXXMy7hZP7u81vxCN8",
+        // oracleB: "roksyHbKUYGp2Him7ubyruUXSKXXMy7hZP7u81vxCN8",
+        // tokenProg: "roksyHbKUYGp2Him7ubyruUXSKXXMy7hZP7u81vxCN8",
+      })
       .rpc();
 
-    console.log("size", val2.toString());
+    console.log("edit order return: ", val2.toString());
   });
 });
