@@ -15,7 +15,7 @@
     "@solana/wallet-adapter-react": "^0.15.35",
     "@solana/wallet-adapter-react-ui": "^0.9.34",
     "@solana/wallet-adapter-wallets": "^0.19.23",
-    "@solana/web3.js": "^1.73.2",
+    "@solana/web3.js": "^1.87.7",
     "autoprefixer": "^10.4.14",
     "encoding": "^0.1.13",
     "next": "latest",
