@@ -3,7 +3,7 @@ import {
   MarketAccount,
   OPENBOOK_PROGRAM_ID,
   OpenBookV2Client,
-} from "@openbook-dex/openbook-v2";
+} from "../openbook";
 import {
   ComputeBudgetProgram,
   SystemProgram,
@@ -63,16 +63,6 @@ export const tokenROKS = new PublicKey(
 
 // export const chainlink = new PublicKey("HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny"); // chainlink
 
-// from "@openbook-dex/openbook-v2/dist/types"
-// this should have been exported from there
-interface Market {
-  market: string;
-  baseMint: string;
-  quoteMint: string;
-  name: string;
-  timestamp: number | null | undefined;
-}
-
 const nonceAcct = new PublicKey("GjbJUK45q4AHRa3GHtwgQbcYpGScBPCGkfXLMmZes3rk");
 
 const lookupTableAddress = new PublicKey(
@@ -97,7 +87,7 @@ export const ixAdvanceNonce = async (compUnits: number) => {
     units: compUnits,
   });
   const addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({
-    microLamports: 20000,
+    microLamports: 150000,
   });
   return [advanceNonce, modifyComputeUnits, addPriorityFee];
 };
@@ -108,6 +98,11 @@ export const sendVersionedTx = async (
 ) => {
   const blockhash = (await connection.getLatestBlockhash()).blockhash;
   // construct a v0 compatible transaction `Message`
+  if (!lookupTableAccount) {
+    console.error("lookuptable null");
+    throw new Error("lookup table null");
+  }
+  console.log("lookupTableAccount: ", lookupTableAccount.key.toBase58());
   const messageV0 = new TransactionMessage({
     payerKey: wallet.publicKey,
     recentBlockhash: blockhash,
@@ -119,7 +114,7 @@ export const sendVersionedTx = async (
   transactionV0.sign([wallet, ...additionalSigners]);
 
   return await connection.sendTransaction(transactionV0, {
-    skipPreflight: true,
+    skipPreflight: false,
   });
 };
 
@@ -158,7 +153,9 @@ export const getMarket = async (
 ): Promise<MarketAccount> => {
   console.log("--> market selected: ", publicKey);
   let market = null;
-  if (!!client.getMarketAccount)
-    market = await client.getMarketAccount(new PublicKey(publicKey));
+  if (!!findAllMarkets) {
+    const allMarkets = await findAllMarkets(client.connection);
+    market = allMarkets.find((mkt) => mkt.market === publicKey);
+  }
   return market ? market : ({} as MarketAccount);
 };

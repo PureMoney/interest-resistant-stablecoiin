@@ -12,20 +12,20 @@ import { Inter } from "next/font/google";
 
 import ActiveLink from "../components/ActiveLink";
 import { RPC } from "../utils/openbook";
-import { RecentPrioritizationFees, GetRecentPrioritizationFeesConfig, Connection } from "@solana/web3.js";
+// import { RecentPrioritizationFees, GetRecentPrioritizationFeesConfig, Connection } from "@solana/web3.js";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function App({ Component, pageProps }: AppProps) {
 
-  const connection = new Connection(RPC, { commitment: "confirmed" });
-  connection.getRecentPrioritizationFees()
-  .then((priorityFee: RecentPrioritizationFees[]) => {
-    console.log("===>>> recent prioritization fees: ", priorityFee);
-  })
-  .catch((error: Error) => {
-    console.error("==>> Error: ", error);
-  });
+  // const connection = new Connection(RPC, { commitment: "confirmed" });
+  // connection.getRecentPrioritizationFees()
+  // .then((priorityFee: RecentPrioritizationFees[]) => {
+  //   console.log("===>>> recent prioritization fees: ", priorityFee);
+  // })
+  // .catch((error: Error) => {
+  //   console.error("==>> Error: ", error);
+  // });
 
   return (
     <ConnectionProvider endpoint={NETWORK}>

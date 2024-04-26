@@ -2,7 +2,7 @@ import { useState } from "react";
 // import { useOpenbookClient } from "../hooks/useOpenbookClient";
 import { PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
-import { OracleConfigParams } from "@openbook-dex/openbook-v2";
+import { OracleConfigParams } from "../openbook";
 import { useOpenbookClient } from "../hooks/useOpenbookClient";
 // import { useWallet } from "@solana/wallet-adapter-react";
 import toast from "react-hot-toast";
@@ -42,7 +42,7 @@ const CreateMarket = () => {
     event.preventDefault();
 
     console.log("--> start create market");
-    console.log("openOrdersAdmin: ", openOrdersAdmin);
+    console.log("openOrdersAdmin: ", openOrdersAdmin.toBase58());
 
     const oracleConfigParams: OracleConfigParams = {
       confFilter: Number(confFilter),
@@ -50,7 +50,7 @@ const CreateMarket = () => {
     };
     try {
       openbookClient
-        .createMarket(
+        .createMarketIx(
           publicKey,
           name,
           quoteMint,
@@ -76,7 +76,7 @@ const CreateMarket = () => {
           const tx = await sendVersionedTx([...nonceInstructions, ...transactionInstructions], signers);
 
           console.log("Create Market tx", tx);
-          toast("Create Market tx: " + tx.toString());
+          // toast("Create Market tx: " + tx.toString());
         })
         .catch((error) => {
           // Handle any errors that might occur during the execution of the promise

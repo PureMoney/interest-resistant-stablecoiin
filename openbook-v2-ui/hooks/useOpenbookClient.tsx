@@ -1,4 +1,4 @@
-import { OpenBookV2Client } from "@openbook-dex/openbook-v2";
+import { OpenBookV2Client } from "../openbook";
 import { Connection, Keypair } from "@solana/web3.js";
 import { AnchorProvider } from "@coral-xyz/anchor";
 // import { WalletAdapter } from "../utils/utils";

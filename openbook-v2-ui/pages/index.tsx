@@ -19,29 +19,43 @@ import {
   ixAdvanceNonce, 
   sendVersionedTx,
   openOrdersAdminE,
-  getAccountInfo
+  getAccountInfo,
+  tokenROKS,
+  tokenUSDC,
+  closeMarketAdminE
 } from "../utils/openbook";
 import { BN } from "@coral-xyz/anchor";
 
 import { LinkIcon } from "@heroicons/react/24/outline";
 import {
+  UIMarket,
+  Market,
   MarketAccount,
-  OrderType,
-  SelfTradeBehavior,
+  OpenOrders,
   Side,
+  SideUtils,
+  PlaceOrderType,
+  PlaceOrderTypeUtils,
+  SelfTradeBehavior,
+  SelfTradeBehaviorUtils,
   nameToString,
   priceLotsToUi,
-} from "@openbook-dex/openbook-v2";
+  OpenOrdersAccount,
+  Order,
+} from "../openbook";
 import { useOpenbookClient } from "../hooks/useOpenbookClient";
-import { Keypair, PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey, TransferParams, DecodedTransferInstruction } from "@solana/web3.js";
 // import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "react-hot-toast";
 import { TOKEN_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/utils/token";
+import { interestBearingMintInitializeInstructionData } from "@solana/spl-token";
 
 function priceData(key) {
   const shiftedValue = key.shrn(64); // Shift right by 64 bits
   return shiftedValue.toNumber(); // Convert BN to a regular number
 }
+
+const OURMARKET = "EU5dWkUXRgHRQBkvMhm8wtQcAF9Lgkpe9KsRuoyp9ke5";
 
 export default function Home() {
   // const { publicKey } = wallet; //useWallet();
@@ -52,7 +66,7 @@ export default function Home() {
     { market: "", baseMint: "", quoteMint: "", name: "" },
   ]);
   const [market, setMarket] = useState({} as MarketAccount);
-  const [marketPubkey, setMarketPubkey] = useState(new PublicKey("EU5dWkUXRgHRQBkvMhm8wtQcAF9Lgkpe9KsRuoyp9ke5"));
+  const [marketPubkey, setMarketPubkey] = useState(new PublicKey(OURMARKET));
   // const [txState, setTxState] = React.useState<ButtonState>("initial");
 
   const columns = [
@@ -96,8 +110,16 @@ export default function Home() {
       fetchData()
       .then((res) => {
         setMarkets(res);
-        fetchMarket(res[0].market);
-        setMarketPubkey(new PublicKey(res[0].market));
+        const ourMarket: UIMarket = {
+          market: OURMARKET,
+          baseMint: tokenROKS.toBase58(),
+          quoteMint: tokenUSDC.toBase58(),
+          name: "USDC-ROKS",
+          timestamp: null
+        };
+        res.push(ourMarket);
+        fetchMarket(OURMARKET);
+        setMarketPubkey(new PublicKey(OURMARKET));
       })
       .catch((e) => {
         console.log(e);
@@ -112,27 +134,35 @@ export default function Home() {
     return priceLotsToUi(market, priceLots);
   }
 
+  function enumerate<T>(items: Generator<T, any, unknown>) {
+    let orders: T[];
+    for (const item of items) {
+      orders.push(item);
+    }
+    return orders;
+  }
+
   const fetchMarket = async (key: string) => {
-    const market = await getMarket(openbookClient, key);
-    setMarket(market);
+    const marketPk = new PublicKey(key,);
+    const marketAcct = await Market.load(openbookClient, marketPk);
+    const orderBook = await marketAcct.loadOrderBook();
+
+    // const [oo] = await Promise.all([
+    //   OpenOrders.loadNullableForMarketAndOwner(market),
+    //   market.loadOrderBook(),
+    //   market.loadEventHeap(),
+    // ]);
+    // console.log(oo?.toPrettyString());
+
+    const booksideAsks = await orderBook.loadAsks();
+    const booksideBids = await orderBook.loadBids();
+
+    setMarket(marketAcct.account);
     setMarketPubkey(new PublicKey(key));
 
-    if (!openbookClient.getBookSide) return;
-
-    const booksideAsks = await openbookClient.getBookSide(market.asks);
-    const booksideBids = await openbookClient.getBookSide(market.bids);
-    if (booksideAsks === null || booksideBids === null) return;
-    const asks = openbookClient.getLeafNodes(booksideAsks).sort((a, b) => {
-      const priceA = priceData(a.key);
-      const priceB = priceData(b.key);
-      return priceB - priceA;
-    });
+    const asks = enumerate(booksideAsks.items());
     setAsks(asks);
-    const bids = openbookClient.getLeafNodes(booksideBids).sort((a, b) => {
-      const priceA = priceData(a.key);
-      const priceB = priceData(b.key);
-      return priceB - priceA;
-    });
+    const bids = enumerate(booksideBids.items());
     setBids(bids);
   };
 
@@ -156,14 +186,9 @@ export default function Home() {
 
     try {
       if (accountsToConsume.length > 0) {
-        const tx = await openbookClient.consumeEvents(
-          marketPubkey,
-          market,
-          new BN(5),
-          accountsToConsume
-        );
-        console.log("consume events tx", tx);
-        toast("Consume events tx: " + tx.toString());
+        const events = await openbookClient.consumeEventsIx(marketPubkey, market, new BN(5), accountsToConsume);
+        console.log("consume events tx", events.keys);
+        // toast("Consume events tx: " + tx.toString());
       }
     }
     catch (error) {
@@ -173,11 +198,11 @@ export default function Home() {
 
   // create open orders indexer
   const createIndexer = async () => {
-    const indexerAccount = Keypair.generate();
+    const indexerAccount = Keypair.fromSeed(Buffer.alloc(7, "indexer"));
     const ixMoveNonce = await ixAdvanceNonce(20000);
-    const ixOpenOrdersIndexer = await openbookClient.createOpenOrdersIndexerInstruction(indexerAccount.publicKey, wallet.publicKey);
+    const ixOpenOrdersIndexer = await openbookClient.createOpenOrdersIndexerIx(indexerAccount.publicKey);
 
-    return await sendVersionedTx([...ixMoveNonce, ixOpenOrdersIndexer]);
+    return { indexerTx: await sendVersionedTx([...ixMoveNonce, ixOpenOrdersIndexer]), indexerAccount };
   };
 
   // place uneditable order
@@ -187,15 +212,25 @@ export default function Home() {
 
     try {
       const openOrdersDelegate = null;
-      const args = {
-        side: Side.Ask,
-        priceLots: new BN(100_000_000),
-        maxBaseLots: new BN(92_233_720),
-        maxQuoteLotsIncludingFees: new BN(92_233_720_360),
-        clientOrderId: new BN(7999999999),
-        orderType: OrderType.Limit,
+      const args: {
+        side: Side,
+        priceLots: BN,
+        maxBaseLots: BN,
+        maxQuoteLotsIncludingFees: BN,
+        clientOrderId: BN,
+        orderType: PlaceOrderType,
         expiryTimestamp: undefined,
-        selfTradeBehavior: SelfTradeBehavior.AbortTransaction,
+        selfTradeBehavior: SelfTradeBehavior,
+        limit: number
+      } = {
+        side: SideUtils.Ask,
+        priceLots: new BN(1_000_000),
+        maxBaseLots: new BN(92_233_000_000_000_000n),
+        maxQuoteLotsIncludingFees: new BN(92_233_720_360_000n),
+        clientOrderId: new BN(2),
+        orderType: PlaceOrderTypeUtils.Limit,
+        expiryTimestamp: undefined,
+        selfTradeBehavior: SelfTradeBehaviorUtils.AbortTransaction,
         limit: 200 // count of orders to fill - must be unlimited
       };
       const marketVault = /* args.side === Side.Bid ? market.marketQuoteVault : */ market.marketBaseVault;
@@ -209,25 +244,48 @@ export default function Home() {
           isWritable: true,
       }));
 
-      // the instruction for createOpenOrders (below) searches for the indexer
-      // rather than pass an indexer as a param; we pre-create it.
-      // await createIndexer();
-      // console.log("--> indexer created");
+      // the instruction for createOpenOrders (below) needs an indexer
+      const { indexerTx, indexerAccount } = await createIndexer();
+      console.log("--> indexer creation Tx: ", indexerTx);
+      console.log("--> indexer: ", indexerAccount.publicKey.toBase58());
 
-      const [ixCreateOpenOrders, openOrdersPubkey] = await openbookClient.createOpenOrdersInstruction(
+      const openOrdersPubkey = await openbookClient.createOpenOrders(
+        wallet,
         marketPubkey,
-        new BN(1),
         "RockStable Open Orders",
-        wallet.publicKey,
+        wallet,
         openOrdersDelegate
       );
 
-      // console.log("--> look for open orders accoun in market ", openbookMarket.publicKey.toBase58());
-      // const openOrdersPubkey = openbookClient.findOpenOrders(openbookMarket.publicKey, new BN(0), wallet.publicKey);
-      // if (!openOrdersPubkey) {
-      //   console.error("--> open orders account not found");
-      //   throw new Error("No open orders");
-      // }
+      const copyBytes = (from: Buffer, to: Uint8Array, j: number) => {
+        const b = 32*j + 8;
+        let i = b;
+        for (; i < b + 32; i++) {
+          to[i - b] = from[i];
+        }
+      }
+
+      const openOrdersAcct = openOrdersPubkey.toBase58();
+      console.log("--> open orders: ", openOrdersAcct);
+      if (openOrdersAcct.length === 44) {
+        console.log("--> examine openOrdersAccount to make sure it doesn't belong to another market");
+        const acctInfo = await getAccountInfo(openOrdersAcct);
+        const bufPtr = new Uint8Array(32);
+        copyBytes(acctInfo.value.data as Buffer, bufPtr, 0);
+        const owner = new PublicKey(bufPtr);
+        copyBytes(acctInfo.value.data as Buffer, bufPtr, 1);
+        const market = new PublicKey(bufPtr);
+        const ownerStr = owner.toBase58();
+        const marketStr = market.toBase58();
+        console.log("--> owner: ", ownerStr);
+        console.log("--> market: ", marketStr);
+        if (marketStr !== marketPubkey.toBase58()) {
+          // we got an open orders acct that belong to a previously defunct market (that we also created):
+          // delete this openOrdersAcct and call createOpenOrdersInstruction again
+          console.log("error: suggested open orders acct belongs to defunct market: ", marketStr);
+          throw new Error("suggested open orders account belongs to defunct market"); // just exit for now
+        }
+      }
 
       const ixPlaceOrder = await openbookClient.program.methods
       .placeOrder(args)
@@ -262,23 +320,37 @@ export default function Home() {
 
       const ixMoveNonce2 = await ixAdvanceNonce(100000);
 
-      let tx = null;
-
-      const openOrdersAcct = openOrdersPubkey.toBase58();
-      console.log("--> open orders: ", openOrdersAcct);
-      if (openOrdersAcct.length === 44) {
-        console.log("--> examine openOrdersAccount to make sure it doesn't belong to another market");
-        const acctInfo = await getAccountInfo(openOrdersAcct);
-        console.log("--> openOrdersAcctInfo: ", acctInfo);
-      }
-      else {
-        tx = await sendVersionedTx([...ixMoveNonce2, ...ixCreateOpenOrders, ixPlaceOrder], signers);
-      }
+      const tx = await sendVersionedTx([...ixMoveNonce2, ixPlaceOrder], signers);
       console.log("placeOrder events tx", tx);
     } catch (error) {
       console.error(error);
     };
   };
+
+  const closeOpenOrderAccount = async () => {
+    const openOrdersAcct = new PublicKey("BpYUcqeQ3cjQDCciWJWhTSrKxDqk4o2xEyqYB23ZCiYh");
+    const indexer = Keypair.fromSeed(openOrdersAcct.toBytes()).publicKey;
+    const ixOpenOrdersIndexer = await openbookClient.createOpenOrdersIndexerIx(indexer);
+
+    const marketData = market; // await openbookClient.getMarketAccount(marketPubkey);
+    const [ixCloseOpenOrdersAcct, signer] = await openbookClient.closeOpenOrdersAccountIx(
+      wallet, 
+      openOrdersAdminE.publicKey,
+      wallet.publicKey,
+      indexer
+    );
+    const ixMoveNonce = await ixAdvanceNonce(20000);
+    const tx = await sendVersionedTx([...ixMoveNonce, ixOpenOrdersIndexer, ixCloseOpenOrdersAcct], signer);
+    console.log("got something from closing of openOrdersAccount: ", tx);
+  }
+
+  const closeMarket = async () => {
+  const [ixCloseMarket, signers] = await openbookClient.closeMarketIx(marketPubkey, market, wallet.publicKey, /* closeMarketAdminE */);
+    // const result = await Market.load(openbookClient, marketPubkey).closeMarket(marketPubkey, marketData, wallet.publicKey, closeMarketAdminE);
+    const ixMoveNonce = await ixAdvanceNonce(20000);
+    const tx = await sendVersionedTx([...ixMoveNonce, ixCloseMarket], signers);
+    console.log("close market result: ", tx);
+  }
 
   return (
     <div>
@@ -366,6 +438,20 @@ export default function Home() {
               onClick={(e: any) => placeOrder()}
             >
               PLACE ORDER
+            </button>
+
+            <button
+              className="items-center text-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              onClick={(e: any) => closeOpenOrderAccount()}
+            >
+              CLOSE OPEN_ORDER_ACCOUNT
+            </button>
+
+            <button
+              className="items-center text-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              onClick={(e: any) => closeMarket()}
+            >
+              CLOSE MARKET
             </button>
 
             <div>
