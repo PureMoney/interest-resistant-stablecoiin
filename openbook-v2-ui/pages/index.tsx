@@ -127,7 +127,7 @@ export default function Home() {
     }
   }, []);
 
-  function priceDataToUI(key) {
+  function priceDataToUI(key: { shrn: (arg0: number) => any; }) {
     const shiftedValue = key.shrn(64); // Shift right by 64 bits
     const priceLots = shiftedValue.toNumber(); // Convert BN to a regular number
 
@@ -135,11 +135,11 @@ export default function Home() {
   }
 
   function enumerate<T>(items: Generator<T, any, unknown>) {
-    let orders: T[];
+    let arrayOfT: T[] = [];
     for (const item of items) {
-      orders.push(item);
+      arrayOfT.push(item);
     }
-    return orders;
+    return arrayOfT;
   }
 
   const fetchMarket = async (key: string) => {
@@ -161,9 +161,9 @@ export default function Home() {
     setMarketPubkey(new PublicKey(key));
 
     const asks = enumerate(booksideAsks.items());
-    setAsks(asks);
+    setAsks(asks.map(o => o.leafNode));
     const bids = enumerate(booksideBids.items());
-    setBids(bids);
+    setBids(bids.map(o => o.leafNode));
   };
 
   const linkedPk = (pk: string) => (
@@ -345,7 +345,7 @@ export default function Home() {
   }
 
   const closeMarket = async () => {
-  const [ixCloseMarket, signers] = await openbookClient.closeMarketIx(marketPubkey, market, wallet.publicKey, /* closeMarketAdminE */);
+  const [ixCloseMarket, signers] = await openbookClient.closeMarketIx(marketPubkey, market, wallet.publicKey, closeMarketAdminE);
     // const result = await Market.load(openbookClient, marketPubkey).closeMarket(marketPubkey, marketData, wallet.publicKey, closeMarketAdminE);
     const ixMoveNonce = await ixAdvanceNonce(20000);
     const tx = await sendVersionedTx([...ixMoveNonce, ixCloseMarket], signers);

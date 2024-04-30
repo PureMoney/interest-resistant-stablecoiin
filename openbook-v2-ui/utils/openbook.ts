@@ -130,7 +130,7 @@ export const fetchData = async () => {
   const provider = useFakeProvider();
   console.log("---> openbook v2 public key: ", OPENBOOK_PROGRAM_ID.toBase58());
   const mkts: string[] = [];
-  const uniqueMarkets: Market[] = [];
+  const uniqueMarkets: UIMarket[] = [];
   const markets = await findAllMarkets(
     connection,
     OPENBOOK_PROGRAM_ID,
