@@ -197,12 +197,14 @@ export default function Home() {
   };
 
   // create open orders indexer
-  const createIndexer = async () => {
-    const indexerAccount = Keypair.fromSeed(Buffer.alloc(7, "indexer"));
+  const createIndexerIx = async () => {
+    const indexerAccount = Keypair.fromSeed(Buffer.concat([
+      Buffer.from("OpenOrdersIndexer", "ascii"), 
+      Buffer.from(wallet.publicKey.toBytes().slice(0, 15))]));
     const ixMoveNonce = await ixAdvanceNonce(20000);
     const ixOpenOrdersIndexer = await openbookClient.createOpenOrdersIndexerIx(indexerAccount.publicKey);
 
-    return { indexerTx: await sendVersionedTx([...ixMoveNonce, ixOpenOrdersIndexer]), indexerAccount };
+    return { indexerTxs: [...ixMoveNonce, ixOpenOrdersIndexer], indexerAccount };
   };
 
   // place uneditable order
@@ -227,34 +229,35 @@ export default function Home() {
         priceLots: new BN(1_000_000),
         maxBaseLots: new BN(92_233_000_000_000_000n),
         maxQuoteLotsIncludingFees: new BN(92_233_720_360_000n),
-        clientOrderId: new BN(2),
+        clientOrderId: new BN(3),
         orderType: PlaceOrderTypeUtils.Limit,
         expiryTimestamp: undefined,
         selfTradeBehavior: SelfTradeBehaviorUtils.AbortTransaction,
         limit: 200 // count of orders to fill - must be unlimited
       };
       const marketVault = /* args.side === Side.Bid ? market.marketQuoteVault : */ market.marketBaseVault;
-      const remainingAccounts = [
-        // nonceAcct.publicKey,
-        // lookupTableAddress,
-      ];
-      const accountsMeta = remainingAccounts.map((remaining) => ({
-          pubkey: remaining,
-          isSigner: false,
-          isWritable: true,
-      }));
+
+      // const remainingAccounts = [
+      //   // nonceAcct.publicKey,
+      //   // lookupTableAddress,
+      // ];
+      // const accountsMeta = remainingAccounts.map((remaining) => ({
+      //     pubkey: remaining,
+      //     isSigner: false,
+      //     isWritable: true,
+      // }));
 
       // the instruction for createOpenOrders (below) needs an indexer
-      const { indexerTx, indexerAccount } = await createIndexer();
-      console.log("--> indexer creation Tx: ", indexerTx);
+      const { indexerTxs, indexerAccount } = await createIndexerIx();
+      console.log("--> indexer creation Tx: ", indexerTxs.length);
       console.log("--> indexer: ", indexerAccount.publicKey.toBase58());
 
-      const openOrdersPubkey = await openbookClient.createOpenOrders(
-        wallet,
+      const [openOrdersIxs, openOrdersPubkey] = await openbookClient.createOpenOrdersIx(
         marketPubkey,
         "RockStable Open Orders",
-        wallet,
-        openOrdersDelegate
+        wallet.publicKey,
+        openOrdersDelegate,
+        indexerAccount.publicKey
       );
 
       const copyBytes = (from: Buffer, to: Uint8Array, j: number) => {
@@ -308,7 +311,7 @@ export default function Home() {
         openOrdersAdmin: openOrdersAdminE.publicKey,
         userTokenAccount: walletTokenAcct4ROKS
       })
-      .remainingAccounts(accountsMeta)
+      // .remainingAccounts(accountsMeta)
       .instruction();
 
       const signers = [];
@@ -318,9 +321,9 @@ export default function Home() {
       signers.push(wallet);
       signers.push(openOrdersAdminE);
 
-      const ixMoveNonce2 = await ixAdvanceNonce(100000);
+      // const ixMoveNonce2 = await ixAdvanceNonce(100000);
 
-      const tx = await sendVersionedTx([...ixMoveNonce2, ixPlaceOrder], signers);
+      const tx = await sendVersionedTx([...indexerTxs, ...openOrdersIxs, ixPlaceOrder], signers);
       console.log("placeOrder events tx", tx);
     } catch (error) {
       console.error(error);

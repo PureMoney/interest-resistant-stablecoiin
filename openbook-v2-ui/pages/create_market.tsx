@@ -23,8 +23,8 @@ const CreateMarket = () => {
   const [name, setName] = useState("ROKS-USDC");
   const [quoteMint, setQuoteMint] = useState(tokenUSDC); // fake usdc
   const [baseMint, setBaseMint] = useState(tokenROKS);
-  const [quoteLotSize, setQuoteLotSize] = useState("100000000");
-  const [baseLotSize, setBaseLotSize] = useState("100000000000");
+  const [quoteLotSize, setQuoteLotSize] = useState("1457000");
+  const [baseLotSize, setBaseLotSize] = useState("1000000000");
   const [makerFee, setMakerFee] = useState("-999");
   const [takerFee, setTakerFee] = useState("999");
   const [timeExpiry, setTimeExpiry] = useState("0");

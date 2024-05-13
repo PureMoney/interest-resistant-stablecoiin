@@ -3,6 +3,7 @@ import {
   MarketAccount,
   OPENBOOK_PROGRAM_ID,
   OpenBookV2Client,
+  UIMarket,
 } from "../openbook";
 import {
   ComputeBudgetProgram,
